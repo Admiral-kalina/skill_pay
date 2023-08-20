@@ -58,4 +58,5 @@ app.post('/webhook', function (req,res){
 
 app.listen(3012,function (){
     console.log('API started')
+    res.send('zalupa')
 });
