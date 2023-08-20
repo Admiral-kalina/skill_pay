@@ -1,0 +1,24 @@
+{
+  "name": "pay",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Admiral-kalina/skill_pay.git"
+  },
+  "author": "kaluna",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Admiral-kalina/skill_pay/issues"
+  },
+  "homepage": "https://github.com/Admiral-kalina/skill_pay#readme",
+  "dependencies": {
+    "@mollie/api-client": "^3.7.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  }
+}
