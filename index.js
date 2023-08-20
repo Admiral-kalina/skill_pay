@@ -3,6 +3,7 @@ var express = require('express');
 var app = express();
 var cors = require('cors');
 app.use(cors())
+app.use(express.json())
 
 // let paymentForOrderInDatabase = {};
 const mollieClient = createMollieClient({
@@ -13,7 +14,10 @@ app.get('/', function (req,res){
     res.send('Hello Api')
 });
 
-app.get('/payment', function (req,res){
+app.post('/payment', function (req,res){
+    console.log(req.body.metadata)
+    const data = req.body
+
     mollieClient.payments
         .create({
             amount: {
@@ -21,14 +25,11 @@ app.get('/payment', function (req,res){
                 currency: "EUR"
             },
             locale: "fr_FR",
-            metadata: {
-                restaurantId: "2g2ig131kh3kug444b4k2bk4bk2",
-                restaurantName: "Zyara Cafe"
-            },
+            metadata: data.metadata,
             method: ["creditcard", "paypal", "ideal", "directdebit"],
             description: "My first API payment",
             redirectUrl: "https://izejs.sse.codesandbox.io/order/123456",
-            webhookUrl: "https://izejs.sse.codesandbox.io/webhook"
+            webhookUrl: "http://localhost:3012"
         })
         .then(payment => {
             //console.log("payment => ", payment);
@@ -48,7 +49,10 @@ app.get('/payment', function (req,res){
         });
 });
 
+app.post('/webhook', function (req,res){
+    console.log('Zalupa robe')
 
+});
 
 
 
