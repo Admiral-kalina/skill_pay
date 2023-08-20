@@ -49,14 +49,16 @@ app.post('/payment', function (req,res){
         });
 });
 
-app.post('/webhook', function (req,res){
-    console.log('Zalupa robe')
+app.get('/webhook', function (req,res){
 
+    console.log('work')
+
+    res.status(301).redirect("https://www.google.com")
 });
 
 
 
 app.listen(3012,function (){
     console.log('API started')
-    res.send('zalupa')
+
 });
