@@ -1,64 +1,98 @@
-const { createMollieClient } = require("@mollie/api-client");
+const {createMollieClient} = require("@mollie/api-client");
 var express = require('express');
+require('dotenv').config();
+var {MongoClient} = require('mongodb');
 var app = express();
 var cors = require('cors');
 app.use(cors())
 app.use(express.json())
 
-// let paymentForOrderInDatabase = {};
-const mollieClient = createMollieClient({
-    apiKey: "test_pgUgytqg5zHBKmwS7rMbhAR2qRw4Tm"
+const mollieClient = createMollieClient({apiKey: process.env.MOLLIE_API});
+const client = new MongoClient(process.env.MONGO_API);
+let payments
+
+async function connect() {
+    try {
+        await client.connect()
+        console.log('connected to mongo db')
+        payments = client.db().collection('payments')
+
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+app.listen(3012, function () {
+    console.log('API started')
+    connect()
 });
 
-app.get('/', function (req,res){
-    res.send('Hello Api')
-});
 
-app.post('/payment', function (req,res){
-    console.log(req.body.metadata)
+const getPaymentById = async (paymentId) => {
+    return await payments.findOne({paymentId: paymentId})
+}
+
+const insertPayment = async (id, amount, metadata, mollieId) => {
+    await payments.insertOne({paymentId: id, status: null, amount, metadata, mollieId})
+}
+
+const getNewPaymentId = async () => {
+    const collectionLength = await payments.count();
+    return collectionLength + 1;
+}
+
+const findAndUpdatePayment = async (paymentId, status) => {
+    const filter = {paymentId: paymentId};
+    const update = {status: status};
+
+    await payments.findOneAndUpdate(filter, {"$set": update}, (err => {
+        if (err) {
+            console.log('ERR',err)
+        }
+        console.log('Updated')
+    }))
+}
+
+app.post('/payment', async function (req, res) {
     const data = req.body
-
+    console.log(data.data)
+    const paymentId = await getNewPaymentId()
     mollieClient.payments
         .create({
-            amount: {
-                value: "10.00",
-                currency: "EUR"
-            },
+            amount: data.data.amount,
             locale: "fr_FR",
             metadata: data.metadata,
             method: ["creditcard", "paypal", "ideal", "directdebit"],
             description: "My first API payment",
-            redirectUrl: "https://izejs.sse.codesandbox.io/order/123456",
-            webhookUrl: "http://localhost:3012"
+            redirectUrl: `http://localhost:8000/checkout?id=${paymentId}`,
         })
-        .then(payment => {
-            //console.log("payment => ", payment);
-            console.log("checkout url => ", payment.getCheckoutUrl());
-            console.log("payment.id => ", payment.id);
-            // paymentForOrderInDatabase.paymentId = payment.id;
-            // paymentForOrderInDatabase.orderId = "123456";
-            // Forward the customer to the payment.getCheckoutUrl()
-            // res.write(payment.getCheckoutUrl());
+        .then(async payment => {
+            await insertPayment(paymentId, data.amount, data.metadata, payment.id)
             res.send(payment.getCheckoutUrl())
         })
         .catch(error => {
-            // Handle the error
             console.log("error.title => ", error.title);
             console.log(error);
             res.write(error.title);
         });
 });
 
-app.get('/webhook', function (req,res){
+app.post('/webhook', async function (req, res) {
+    const paymentId = Number(req.body.data.paymentId)
+    const paymentData = await getPaymentById(paymentId)
 
-    console.log('work')
+    mollieClient.payments
+        .get(paymentData.mollieId)
+        .then(async payment => {
+            await findAndUpdatePayment(paymentId, payment.status)
 
-    res.status(301).redirect("https://www.google.com")
+            res.send(payment.status)
+        })
+        .catch(error => {
+            console.error(error);
+            res.end(); //end the response
+        });
 });
 
 
 
-app.listen(3012,function (){
-    console.log('API started')
-
-});
