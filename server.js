@@ -60,7 +60,7 @@ app.post('/payment', async function (req, res) {
     mollieClient.payments
         .create({
             amount: data.data.amount,
-            locale: "fr_FR",
+            locale: "en_US",
             metadata: data.metadata,
             method: ["creditcard", "paypal", "ideal", "directdebit"],
             description: "My first API payment",
