@@ -48,7 +48,7 @@ const findAndUpdatePayment = async (paymentId, status) => {
 
     await payments.findOneAndUpdate(filter, {"$set": update}, (err => {
         if (err) {
-            console.log('ERR',err)
+            console.log('ERR', err)
         }
         console.log('Updated')
     }))
@@ -95,17 +95,23 @@ app.post('/webhook', async function (req, res) {
         });
 });
 
-app.get('/posts', async function(req,res) {
-    const a = await axios.get('https://graph.instagram.com/me/media?fields=id,media_type,media_url,caption&limit=5&access_token=IGQWRNU0lrLTNScUVTdDBxTUdJdDczRlFScGNjeDZAGanhZASVI0WlFIMjdBT011UTNXQVdfSGhWTUxuYjVWaEVUY3dacnVkSVE2N0p1TlI3ZAUtLcWJlSlFaaXZAvZA3YyeC0yQkotWHN5MWtLc240OUxicnRxWDJiR2cZD')
-    // const a = await axios.get('https://www.instagram.com/graphql/query/?query_id=17888483320059182&variables=%7B%22id%22:%2237144011497%22,%22first%22:20,%22after%22:null%7D')
-
-    fetch(`https://graph.instagram.com/me/media?fields=id,media_type,media_url,caption&limit=5&access_token=${process.env.INSTAGRAM_TOKEN}`)
-        .then((response) => {
-            return response.json();
+app.get('/posts', async function (req, res) {
+    try {
+      const a =   await axios.get(`https://graph.instagram.com/me/media?fields=id,media_type,media_url,caption&limit=5&access_token=${process.env.INSTAGRAM_TOKEN}`, {
+            headers: {
+                'access_token': process.env.INSTAGRAM_TOKEN,
+                'limit': '5',
+                'fields': 'id,media_type,media_url,caption'
+            }
         })
-        .then((data) => {
-            console.log('some',data);
-        });
+
+
+        console.log('resp',a.data)
+res.send(a.data)
+    } catch (error) {
+        console.log('Error', error)
+    }
+
     // console.log('A',a)
     // res.send(a)
 })
