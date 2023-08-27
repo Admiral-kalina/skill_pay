@@ -4,6 +4,7 @@ require('dotenv').config();
 var {MongoClient} = require('mongodb');
 var app = express();
 var cors = require('cors');
+const axios = require("axios");
 app.use(cors())
 app.use(express.json())
 
@@ -93,6 +94,21 @@ app.post('/webhook', async function (req, res) {
             res.end(); //end the response
         });
 });
+
+app.get('/posts', async function(req,res) {
+    const a = await axios.get('https://graph.instagram.com/me/media?fields=id,media_type,media_url,caption&limit=5&access_token=IGQWRNU0lrLTNScUVTdDBxTUdJdDczRlFScGNjeDZAGanhZASVI0WlFIMjdBT011UTNXQVdfSGhWTUxuYjVWaEVUY3dacnVkSVE2N0p1TlI3ZAUtLcWJlSlFaaXZAvZA3YyeC0yQkotWHN5MWtLc240OUxicnRxWDJiR2cZD')
+    // const a = await axios.get('https://www.instagram.com/graphql/query/?query_id=17888483320059182&variables=%7B%22id%22:%2237144011497%22,%22first%22:20,%22after%22:null%7D')
+
+    fetch('https://graph.instagram.com/me/media?fields=id,media_type,media_url,caption&limit=5&access_token=IGQWRNU0lrLTNScUVTdDBxTUdJdDczRlFScGNjeDZAGanhZASVI0WlFIMjdBT011UTNXQVdfSGhWTUxuYjVWaEVUY3dacnVkSVE2N0p1TlI3ZAUtLcWJlSlFaaXZAvZA3YyeC0yQkotWHN5MWtLc240OUxicnRxWDJiR2cZD')
+        .then((response) => {
+            return response.json();
+        })
+        .then((data) => {
+            console.log('some',data);
+        });
+    // console.log('A',a)
+    // res.send(a)
+})
 
 
 
